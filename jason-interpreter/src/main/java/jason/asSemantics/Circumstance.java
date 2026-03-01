@@ -22,6 +22,7 @@ import org.w3c.dom.Element;
 import jason.asSyntax.Trigger.TEOperator;
 import jason.asSyntax.Trigger.TEType;
 import jason.infra.local.LocalAgArch;
+import jason.util.TraceLogger;
 import jason.util.ToDOM;
 
 public class Circumstance implements Serializable, ToDOM {
@@ -119,6 +120,7 @@ public class Circumstance implements Serializable, ToDOM {
 
     public Event addAchvGoal(Literal l, Intention i) {
         Event evt = new Event(new Trigger(TEOperator.add, TEType.achieve, l), i);
+        TraceLogger.goalAdded(ts, evt.getTrigger(), i);
         addEvent(evt);
         return evt;
     }
@@ -135,6 +137,8 @@ public class Circumstance implements Serializable, ToDOM {
             AE = ev;
         else
             E.add(ev);
+
+        TraceLogger.eventCreated(ts, ev);
 
         // notify listeners
         if (hasListener())
@@ -155,6 +159,8 @@ public class Circumstance implements Serializable, ToDOM {
         newE.add(pos,ev);
         E.clear();
         E.addAll(newE);
+
+        TraceLogger.eventCreated(ts, ev);
 
         // notify listeners
         if (hasListener())

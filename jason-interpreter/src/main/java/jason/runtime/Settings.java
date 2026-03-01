@@ -32,6 +32,7 @@ public class Settings implements Serializable {
     private boolean qCache     = false; // whether to use query cache
     private boolean qProfiling = false; // whether has query profiling
     private boolean troON      = true;  // tail recursion optimisation is on by default
+    private boolean eventTrace = false; // whether to emit machine-readable execution traces
 
     private Map<String,Object> userParameters = new HashMap<>();
 
@@ -39,6 +40,7 @@ public class Settings implements Serializable {
     public static final String INIT_BELS  = "beliefs";
     public static final String INIT_GOALS = "goals";
     public static final String MIND_INSPECTOR = "mindinspector";
+    public static final String EVENT_TRACE = "event_trace";
     public Settings() {
     }
 
@@ -98,6 +100,8 @@ public class Settings implements Serializable {
                 setQueryCache( "cycle".equals((String)options.get("qcache")) );
             } else if (key.equals("qprofiling")) {
                 setQueryProfiling( "yes".equals((String)options.get("qprofiling")) );
+            } else if (key.equals(EVENT_TRACE)) {
+                setEventTrace("true".equals((String)options.get(EVENT_TRACE)));
             } else {
                 //userParameters.put(key, options.get(key));
             }
@@ -208,6 +212,13 @@ public class Settings implements Serializable {
     }
     public void setQueryProfiling(boolean b) {
         qProfiling = b;
+    }
+
+    public boolean hasEventTrace() {
+        return eventTrace;
+    }
+    public void setEventTrace(boolean b) {
+        eventTrace = b;
     }
 
     public Map<String,Object> getUserParameters() {

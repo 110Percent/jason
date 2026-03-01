@@ -10,6 +10,7 @@ import jason.asSemantics.TransitionSystem;
 import jason.asSyntax.Literal;
 import jason.infra.local.LocalAgArch;
 import jason.runtime.RuntimeServices;
+import jason.util.TraceLogger;
 
 /**
  * Base agent architecture class that defines the overall agent architecture;
@@ -181,6 +182,7 @@ public class AgArch implements Comparable<AgArch>, Serializable {
 
     /** called to inform that the action execution is finished */
     public void actionExecuted(ActionExec act) {
+        TraceLogger.actionExecuted(getTS(), act);
         getTS().getC().addFeedbackAction(act);
         wakeUpAct();
     }

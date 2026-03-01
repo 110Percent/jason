@@ -19,6 +19,7 @@ import jason.stdlib.fail_goal;
 import jason.stdlib.succeed_goal;
 import jason.util.Config;
 import jason.util.RunnableSerializable;
+import jason.util.TraceLogger;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -75,8 +76,6 @@ public class TransitionSystem implements Serializable {
         nrcslbr = setts.nrcbp(); // to do BR to start with
 
         setLogger(agArch);
-        if (setts != null && setts.verbose() >= 0)
-            logger.setLevel(setts.logLevel());
 
         if (a != null)
             a.setTS(this);
@@ -90,9 +89,28 @@ public class TransitionSystem implements Serializable {
             logger = Logger.getLogger(TransitionSystem.class.getName() + "." + arch.getAgName());
         else
             logger = Logger.getLogger(TransitionSystem.class.getName());
+        configureLoggerLevel();
     }
     public void setLogger(Logger l) {
         logger = l;
+        configureLoggerLevel();
+    }
+
+    private void configureLoggerLevel() {
+        if (logger == null || setts == null) {
+            return;
+        }
+
+        Level level = null;
+        if (setts.verbose() >= 0) {
+            level = setts.logLevel();
+        }
+        if (setts.hasEventTrace() && (level == null || level.intValue() > Level.INFO.intValue())) {
+            level = Level.INFO;
+        }
+        if (level != null) {
+            logger.setLevel(level);
+        }
     }
 
     // ---------------------------------------------------------
@@ -347,7 +365,7 @@ public class TransitionSystem implements Serializable {
                         switch (m.getIlForce()) {
                             case "achieve" -> {
                                 content = add_nested_source.addAnnotToList(content, new Atom(sender));
-                                C.addEvent(new Event(new Trigger(TEOperator.add, TEType.achieve, (Literal) content)));
+                                updateEvents(new Event(new Trigger(TEOperator.add, TEType.achieve, (Literal) content)));
                                 added = true;
                             }
                             case "tell" -> {
@@ -403,6 +421,7 @@ public class TransitionSystem implements Serializable {
         // Rule for atomic, events from atomic intention have priority
         C.SE = C.removeAtomicEvent();
         if (C.SE != null) {
+            TraceLogger.eventSelected(this, C.SE);
             stepDeliberate = State.RelPl;
             return;
         }
@@ -413,6 +432,7 @@ public class TransitionSystem implements Serializable {
             if (logger.isLoggable(Level.FINE))
                 logger.fine("Selected event "+C.SE);
             if (C.SE != null) {
+                TraceLogger.eventSelected(this, C.SE);
 
                 // update (external) events (+ and -) are copied for all intentions interested on them (new JasonER)
                 // possibly creating branches for these intentions
@@ -932,6 +952,7 @@ public class TransitionSystem implements Serializable {
         case action:
             body = (Literal)body.capply(u);
             C.A = new ActionExec(body, curInt);
+            TraceLogger.actionSelected(this, C.A);
             break;
 
         case internalAction:
@@ -1211,11 +1232,14 @@ public class TransitionSystem implements Serializable {
                 logger.fine("Returning from IM "+topIM.getPlan().getLabel()+", te="+topTrigger+" unif="+topIM.unif);
 
             // produce ^!g[state(finished)[reason(achieved)]] event
-            if (!topTrigger.isMetaEvent() && topTrigger.isGoal() && hasGoalListener()) {
-                for (GoalListener gl: goalListeners) {
-                    gl.goalFinished(topTrigger, GoalStates.achieved);
-                }
-            }
+              if (!topTrigger.isMetaEvent() && topTrigger.isGoal() && hasGoalListener()) {
+                  for (GoalListener gl: goalListeners) {
+                      gl.goalFinished(topTrigger, GoalStates.achieved);
+                  }
+              }
+              if (!topTrigger.isMetaEvent() && topTrigger.isGoal()) {
+                  TraceLogger.goalFinished(this, topTrigger, i);
+              }
 
             // if has finished a failure handling IM ...
             if (im.getTrigger().isGoal() && !im.getTrigger().isAddition() && !i.isFinished()) {
@@ -1408,6 +1432,9 @@ public class TransitionSystem implements Serializable {
         // b) create the failure event (it is done by SelRelPlan)
         //if (e.isInternal() || C.hasListener() || ag.getPL().hasCandidatePlan(e.trigger)) {
         // complex to optimise (the above if) in JasonER. removed until we have a good implementation
+            if (e.getTrigger().isAddition() && e.getTrigger().isGoal()) {
+                TraceLogger.goalAdded(this, e.getTrigger(), e.getIntention());
+            }
             C.addEvent(e);
             if (logger.isLoggable(Level.FINE)) logger.fine("Added event " + e+ ", events = "+C.getEvents());
         //}
@@ -1441,6 +1468,7 @@ public class TransitionSystem implements Serializable {
 
         //if (im.getTrigger().isGoal()) {
         if (failEvent.getTrigger().isGoal()) {
+            TraceLogger.goalFailed(this, im.getTrigger(), i, reason);
 
             // notify listeners
             if (hasGoalListener())
@@ -1490,6 +1518,7 @@ public class TransitionSystem implements Serializable {
         Trigger tevent = ev.trigger;
         boolean failEeventGenerated = false;
         if (tevent.isAddition() && tevent.isGoal()) {
+            TraceLogger.goalFailed(this, tevent, ev.getIntention(), reason);
             // produce failure event
             Event failEvent = findEventForFailure(ev.intention, tevent);
 

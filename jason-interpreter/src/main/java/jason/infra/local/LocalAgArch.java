@@ -35,6 +35,7 @@ import jason.runtime.RuntimeServices;
 import jason.runtime.RuntimeServicesFactory;
 import jason.runtime.Settings;
 import jason.util.Config;
+import jason.util.TraceLogger;
 
 /**
  * This class provides an agent architecture when using Local
@@ -254,6 +255,7 @@ public class LocalAgArch extends AgArch implements Runnable, Serializable {
     }
 
     protected void reasoningCycle() {
+        TraceLogger.cycleStart(getTS(), getCycleNumber());
         getFirstAgArch().reasoningCycleStarting();
 
         sense();

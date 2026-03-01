@@ -20,6 +20,7 @@ import jason.pl.PlanLibrary;
 import jason.runtime.Settings;
 import jason.runtime.SourcePath;
 import jason.util.Config;
+import jason.util.TraceLogger;
 import jason.util.ToDOM;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1018,6 +1019,7 @@ public class Agent implements Serializable, ToDOM {
                         result[0] = Collections.singletonList(beliefToAdd);
                         result[1] = Collections.emptyList();
                         if (logger.isLoggable(Level.FINE)) logger.fine("brf added " + beliefToAdd);
+                        TraceLogger.beliefAdded(ts, beliefToAdd, i);
                     }
                 }
 
@@ -1057,6 +1059,7 @@ public class Agent implements Serializable, ToDOM {
                             result[0] = Collections.emptyList();
                         }
                         result[1] = Collections.singletonList(beliefToDel);
+                        TraceLogger.beliefRemoved(ts, beliefToDel, i);
                     }
                 }
             } catch (Exception e) {
