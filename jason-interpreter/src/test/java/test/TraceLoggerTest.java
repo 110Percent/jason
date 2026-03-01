@@ -1,12 +1,9 @@
 package test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import jason.architecture.AgArch;
 import jason.asSemantics.Agent;
@@ -36,58 +33,38 @@ public class TraceLoggerTest extends TestCase {
         assertEquals("JASON_TRACE;type=belief_add;literal=a\\;b\\=c\\nx", msg);
     }
 
-    public void testBeliefTraceIsLogged() throws Exception {
+    public void testBeliefTraceIsLoggedToFile() throws Exception {
         Agent ag = new Agent();
         ag.initAg();
 
+        Path traceDir = Files.createTempDirectory("jason-trace-test");
         Settings settings = new Settings();
         settings.setEventTrace(true);
+        settings.addOption(Settings.EVENT_TRACE_DIR, traceDir.toString());
 
-        TransitionSystem ts = new TransitionSystem(ag, new Circumstance(), settings, new AgArch());
-        CollectingHandler handler = new CollectingHandler();
-        Logger logger = ts.getLogger();
-        boolean oldParentHandlers = logger.getUseParentHandlers();
+        new TransitionSystem(ag, new Circumstance(), settings, new AgArch());
 
-        logger.setUseParentHandlers(false);
-        logger.addHandler(handler);
         try {
             ag.addBel(ASSyntax.parseLiteral("p(a)"));
         } finally {
-            logger.removeHandler(handler);
-            logger.setUseParentHandlers(oldParentHandlers);
+            TraceLogger.closeAll();
         }
 
-        assertTrue(handler.contains("type=belief_add"));
-        assertTrue(handler.contains("type=event_created"));
-    }
-
-    private static class CollectingHandler extends Handler {
-        private final List<String> messages = new ArrayList<>();
-
-        private CollectingHandler() {
-            setLevel(Level.ALL);
+        Path traceFile;
+        try (Stream<Path> files = Files.walk(traceDir)) {
+            traceFile = files.filter(Files::isRegularFile)
+                             .filter(path -> path.getFileName().toString().endsWith(".eventtrace"))
+                             .findFirst()
+                             .orElseThrow();
         }
 
-        @Override
-        public void publish(LogRecord record) {
-            messages.add(record.getMessage());
-        }
+        String traceText = Files.readString(traceFile);
+        assertTrue(traceText.contains("type=belief_add"));
+        assertTrue(traceText.contains("type=event_created"));
+        assertTrue(traceFile.getFileName().toString().endsWith(".eventtrace"));
 
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() {
-        }
-
-        private boolean contains(String text) {
-            for (String message: messages) {
-                if (message.contains(text)) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        Path runDir = traceFile.getParent();
+        assertEquals(traceDir, runDir.getParent());
+        assertTrue(runDir.getFileName().toString().matches("\\d{8}-\\d{6}-\\d{3}"));
     }
 }

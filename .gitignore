@@ -63,3 +63,6 @@ doc/index.html
 doc/doc.html
 doc.html
 /doc
+
+*.eventtrace
+*.lck

@@ -23,8 +23,8 @@ sourceSets {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 
-    maven { url "https://raw.githubusercontent.com/jacamo-lang/mvn-repo/master" }
     maven { url 'https://repo.gradle.org/gradle/libs-releases' }
 }
 

@@ -6,7 +6,7 @@
 
 MAS domestic_robot {
     environment: HouseEnv(gui) // use "nogui" as parameter to not show the GUI
-    agents: robot;
+    agents: robot[event_trace=true];
             owner;
             supermarket;
 }

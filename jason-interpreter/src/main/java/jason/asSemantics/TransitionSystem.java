@@ -101,14 +101,8 @@ public class TransitionSystem implements Serializable {
             return;
         }
 
-        Level level = null;
         if (setts.verbose() >= 0) {
-            level = setts.logLevel();
-        }
-        if (setts.hasEventTrace() && (level == null || level.intValue() > Level.INFO.intValue())) {
-            level = Level.INFO;
-        }
-        if (level != null) {
+            Level level = setts.logLevel();
             logger.setLevel(level);
         }
     }

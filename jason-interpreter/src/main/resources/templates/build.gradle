@@ -18,7 +18,7 @@ defaultTasks 'run'
 
 repositories {
     mavenCentral()
-    maven { url "https://raw.githubusercontent.com/jacamo-lang/mvn-repo/master" }
+    mavenLocal()
     //maven { url "https://jade.tilab.com/maven/" }
 }
 

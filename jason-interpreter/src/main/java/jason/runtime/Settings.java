@@ -41,6 +41,7 @@ public class Settings implements Serializable {
     public static final String INIT_GOALS = "goals";
     public static final String MIND_INSPECTOR = "mindinspector";
     public static final String EVENT_TRACE = "event_trace";
+    public static final String EVENT_TRACE_DIR = "event_trace_dir";
     public Settings() {
     }
 
@@ -219,6 +220,9 @@ public class Settings implements Serializable {
     }
     public void setEventTrace(boolean b) {
         eventTrace = b;
+    }
+    public String getEventTraceDir() {
+        return getUserParameter(EVENT_TRACE_DIR);
     }
 
     public Map<String,Object> getUserParameters() {

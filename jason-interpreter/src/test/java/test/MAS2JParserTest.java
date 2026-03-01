@@ -24,7 +24,7 @@ public class MAS2JParserTest extends TestCase {
         source.append("infrastructure: JaCaMo \n");
         source.append("environment: myEnv at \"x.edu\" \n");
         source.append("executionControl: myController ");
-        source.append("agents: ag1 [events=discard,intBels=newFocus,osfile=\"a/x.xml\"]; ag2 /home/agTest.asl agentClass mypkg.MyAgent #2; ag3 at \"x.edu\"; auctionner agentArchClass AuctionnerGUI;");
+        source.append("agents: ag1 [events=discard,intBels=newFocus,event_trace=true,event_trace_dir=\"trace/out\",osfile=\"a/x.xml\"]; ag2 /home/agTest.asl agentClass mypkg.MyAgent #2; ag3 at \"x.edu\"; auctionner agentArchClass AuctionnerGUI;");
         source.append("directives: md1=mypkg.DebugDirective; md2=mypkg.LogDirective;");
         source.append("classpath: \"x.jar\"; \"../../\";");
         source.append("aslSourcePath: \"kk\"; \".\";");
@@ -56,7 +56,9 @@ public class MAS2JParserTest extends TestCase {
             //project.writeXMLScript(System.out);
             //project.writeScripts(true);
             Map ag1Opt = project.getAg("ag1").getOptions();
-            assertEquals(ag1Opt.size(),3);
+            assertEquals(ag1Opt.size(),5);
+            assertEquals("true", ag1Opt.get("event_trace"));
+            assertEquals("\"trace/out\"", ag1Opt.get("event_trace_dir"));
 
             assertEquals(project.getDirectiveClasses().size(),2);
             assertEquals(project.getDirectiveClasses().get("md2").toString(), "mypkg.LogDirective");

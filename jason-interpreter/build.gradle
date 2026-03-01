@@ -41,6 +41,7 @@ tasks.sourcesJar {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 
     maven { url "https://raw.githubusercontent.com/jacamo-lang/mvn-repo/master" }
 }
